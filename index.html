@@ -1,0 +1,260 @@
+<style>
+    /** To disable arrows*/
+    /* Chrome, Safari, Edge, Opera */
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    /* Firefox */
+    input[type=number] {
+        -moz-appearance: textfield;
+    }
+
+    .card {
+        width: 350px;
+        height: 200px;
+        background: #333333;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        padding: 10px;
+        color: #dddddd;
+        justify-content: center;
+        transform: translateZ(1px);
+        transition-duration: 300ms;
+    }
+
+    .card>.cc-number {
+        position: relative;
+        height: 30px;
+        font-size: 30px;
+        padding-top: 5px;
+        padding-bottom: 5px;
+        display: flex;
+    }
+
+    input {
+        height: 100%;
+        min-width: 20px;
+        outline: none;
+        padding-left: 15px;
+        background-color: Rgba(0, 0, 0, 0.2);
+        border: none;
+        color: #dddddd;
+        border-radius: 2px;
+
+    }
+
+    .card>.cc-number>input {
+        margin-left: 5px;
+        margin-right: 5px;
+        letter-spacing: 5px;
+
+    }
+
+    .card>.cc-name,
+    .card>.cc-expiry,
+    .card>.cvv {
+        position: relative;
+        height: 30px;
+        top: 10px;
+        padding-left: 5px;
+    }
+
+    .card>.cc-expiry {
+        display: flex;
+        top: 20px;
+    }
+
+    .card>.cc-expiry>input {
+        width: 100px;
+        margin-right: 10px;
+    }
+
+    .flip {
+        transform: rotateX(180deg);
+        backface-visibility: hidden;
+    }
+
+    .back {
+        top: 10px;
+        position: absolute;
+        transform: rotateX(180deg);
+        transition-duration: 300px;
+        backface-visibility: hidden;
+        display: flex;
+        justify-content: start;
+    }
+
+    .flip-front {
+        transition-duration: 300ms;
+        transform: rotateX(0deg);
+        backface-visibility: hidden;
+    }
+
+    .card>.cvv>input {
+        width: 50px;
+    }
+
+    button {
+        padding: 5px;
+        outline: none;
+        bordeR: none;
+        background: rgba(10, 220, 10, 1);;
+        color: white;
+        font-size: 12px;
+        border-radius: 5px;
+        top: 10px;
+        position: relative;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .show {
+        opacity: 1;
+        transition-duration: 300ms;
+    }
+</style>
+
+
+<div class="card">
+    <div class="cc-number">
+        <input type="number" name="cc-number-1" class="cc-number-1" oninput="ccNumber1Changed()" onpaste="return false;"
+            onCopy="return false" onCut="return false">
+        <input type="number" name="cc-number-2" class="cc-number-2" oninput="ccNumber2Changed()" onpaste="return false;"
+            onCopy="return false" onCut="return false">
+        <input type="number" name="cc-number-3" class="cc-number-3" oninput="ccNumber3Changed()" onpaste="return false;"
+            onCopy="return false" onCut="return false">
+        <input type="number" name="cc-number-4" class="cc-number-4" oninput="ccNumber4Changed()" onpaste="return false;"
+            onCopy="return false" onCut="return false">
+    </div>
+    <div class="cc-name">
+        <input type="text" name="cc-name-input" class="cc-name-input" placeholder="Your name" oninput="nameChanged()">
+    </div>
+
+    <div class="cc-expiry">
+        <input type="number" name="month" class="cc-expiry-month" placeholder="MM" oninput="expiryMonthChanged()"
+            onpaste="return false;" onCopy="return false" onCut="return false">
+        <input type="number" name="year" min="2020" max=2025 class="cc-expiry-year" placeHolder="YYYY"
+            oninput="expiryYearChanged()" onpaste="return false;" onCopy="return false" onCut="return false">
+    </div>
+</div>
+
+<div class="card back">
+
+    <div class="cvv">
+        <input type="number" class="cc-cvv" maxlength="3" oninput="cvvChanged();">
+    </div>
+</div>
+
+<button onclick="detailsSaved();" class="save-details">
+    Save datails
+</button>
+
+
+<script>
+
+    // Utils
+    let getVal = (str) => document.querySelector(str).value;
+    let focus = (str) => document.querySelector(str).focus();
+    let lenCmp = (text, len) => text.toString().length == len;
+
+    let cmpValueLength = (str, len) => {
+        let val = getVal(str);
+        return lenCmp(val, len)
+    }
+
+    let ccNumber1Changed = () => {
+        let val = getVal(".cc-number-1");
+        lenCmp(val, 4) && focus(".cc-number-2");
+        validate()
+    }
+    let ccNumber2Changed = () => {
+        let val = getVal(".cc-number-2");
+        lenCmp(val, 4) && focus(".cc-number-3");
+        validate()
+    }
+    let ccNumber3Changed = () => {
+        let val = getVal(".cc-number-3");
+        lenCmp(val, 4) && focus(".cc-number-4");
+        validate()
+    }
+    let ccNumber4Changed = () => {
+        let val = getVal(".cc-number-4");
+        lenCmp(val, 4) && focus(".cc-name-input");
+        validate()
+    }
+
+    let nameChanged = () => getVal(".cc-name-input").trim() > 0 && validate();
+
+    let expiryMonthChanged = () => {
+        let val = getVal(".cc-expiry-month");
+        if (val > 12) {
+            document.querySelector(".cc-expiry-month").value = 12;
+        }
+        if (val.toString().length == 2) {
+            focus(".cc-expiry-year");
+        }
+        validate()
+    }
+    let toggleFlip = () => {
+        if (document.querySelector(".card").classList.contains("flip")) {
+            document.querySelector(".card").classList.remove("flip");
+            document.querySelector(".back").classList.remove("flip-front");
+        } else {
+            document.querySelector(".card").classList.add("flip");
+            document.querySelector(".back").classList.add("flip-front");
+        }
+        return true;
+    }
+
+    let expiryYearChanged = () => {
+        let val = getVal(".cc-expiry-year");
+        let currentYear = new Date().getFullYear();
+        if (val.toString().length == 4) {
+            if (val < currentYear) {
+                document.querySelector(".cc-expiry-year").value = currentYear + 1;
+            }
+
+            if (val > currentYear + 5) {
+                document.querySelector(".cc-expiry-year").value = currentYear + 5;
+            }
+
+            validate();
+        }
+
+    }
+
+    let showSave = () => {
+        document.querySelector(".save-details").classList.add("show");
+    }
+
+    let cvvChanged = () => {
+        let val = getVal(".cc-cvv");
+        if (val.toString().length == 3) {
+            showSave();
+        }
+        if (val.toString().length > 3) {
+            document.querySelector(".cc-cvv").value = val.slice(0, 3);
+        }
+    }
+
+    let validate = () => {
+        cmpValueLength(".cc-number-1", 4) &&
+            cmpValueLength(".cc-number-2", 4) &&
+            cmpValueLength(".cc-number-3", 4) &&
+            cmpValueLength(".cc-number-4", 4) &&
+            document.querySelector(".cc-name-input").value.trim().length > 0 &&
+            cmpValueLength(".cc-expiry-month", 2) &&
+            cmpValueLength(".cc-expiry-year", 4) &&
+            toggleFlip() &&
+            document.querySelector(".cc-cvv").focus();
+
+    }
+
+    let detailsSaved = () => {
+        alert("Details saved!");
+    }
+</script>
