@@ -63,6 +63,11 @@
         padding-left: 5px;
     }
 
+    .card >.cvv {
+        left: 80%;
+        top: 30px;
+    }
+
     .card>.cc-expiry {
         display: flex;
         top: 20px;
@@ -119,35 +124,37 @@
 </style>
 
 
-<div class="card">
-    <div class="cc-number">
-        <input type="number" name="cc-number-1" class="cc-number-1" oninput="ccNumber1Changed()" onpaste="return false;"
-            onCopy="return false" onCut="return false" autocomplete="off">
-        <input type="number" name="cc-number-2" class="cc-number-2" oninput="ccNumber2Changed()" onpaste="return false;"
-            onCopy="return false" onCut="return false" autocomplete="off">
-        <input type="number" name="cc-number-3" class="cc-number-3" oninput="ccNumber3Changed()" onpaste="return false;"
-            onCopy="return false" onCut="return false" autocomplete="off">
-        <input type="number" name="cc-number-4" class="cc-number-4" oninput="ccNumber4Changed()" onpaste="return false;"
-            onCopy="return false" onCut="return false" autocomplete="off">
+<form>
+    <div class="card">
+        <div class="cc-number">
+            <input type="number" name="cc-number-1" class="cc-number-1" oninput="ccNumberChanged('.cc-number-1', '.cc-number-2')" onpaste="return false;"
+                onCopy="return false" onCut="return false" autocomplete="off">
+            <input type="number" name="cc-number-2" class="cc-number-2" oninput="ccNumberChanged('.cc-number-2', '.cc-number-3')" onpaste="return false;"
+                onCopy="return false" onCut="return false" autocomplete="off">
+            <input type="number" name="cc-number-3" class="cc-number-3" oninput="ccNumberChanged('.cc-number-3', '.cc-number-4')" onpaste="return false;"
+                onCopy="return false" onCut="return false" autocomplete="off">
+            <input type="number" name="cc-number-4" class="cc-number-4" oninput="ccNumberChanged('.cc-number-4', '.cc-name-input')" onpaste="return false;"
+                onCopy="return false" onCut="return false" autocomplete="off">
+        </div>
+        <div class="cc-name">
+            <input type="text" name="cc-name-input" class="cc-name-input" placeholder="Your name" oninput="nameChanged()" autocomplete="off">
+        </div>
+    
+        <div class="cc-expiry">
+            <input type="number" name="month" class="cc-expiry-month" placeholder="MM" oninput="expiryMonthChanged()"
+                onpaste="return false;" onCopy="return false" onCut="return false" autocomplete="off">
+            <input type="number" name="year" min="2020" max=2025 class="cc-expiry-year" placeHolder="YYYY"
+                oninput="expiryYearChanged()" onpaste="return false;" onCopy="return false" onCut="return false" autocomplete="off">
+        </div>
     </div>
-    <div class="cc-name">
-        <input type="text" name="cc-name-input" class="cc-name-input" placeholder="Your name" oninput="nameChanged()" autocomplete="off">
+    
+    <div class="card back">
+    
+        <div class="cvv">
+            <input type="number" class="cc-cvv" maxlength="3" oninput="cvvChanged();">
+        </div>
     </div>
-
-    <div class="cc-expiry">
-        <input type="number" name="month" class="cc-expiry-month" placeholder="MM" oninput="expiryMonthChanged()"
-            onpaste="return false;" onCopy="return false" onCut="return false" autocomplete="off">
-        <input type="number" name="year" min="2020" max=2025 class="cc-expiry-year" placeHolder="YYYY"
-            oninput="expiryYearChanged()" onpaste="return false;" onCopy="return false" onCut="return false" autocomplete="off">
-    </div>
-</div>
-
-<div class="card back">
-
-    <div class="cvv">
-        <input type="number" class="cc-cvv" maxlength="3" oninput="cvvChanged();">
-    </div>
-</div>
+</form>
 
 <button onclick="detailsSaved();" class="save-details">
     Save datails
@@ -166,28 +173,30 @@
         return lenCmp(val, len)
     }
 
-    let ccNumber1Changed = () => {
-        let val = getVal(".cc-number-1");
-        lenCmp(val, 4) && focus(".cc-number-2");
-        validate()
-    }
-    let ccNumber2Changed = () => {
-        let val = getVal(".cc-number-2");
-        lenCmp(val, 4) && focus(".cc-number-3");
-        validate()
-    }
-    let ccNumber3Changed = () => {
-        let val = getVal(".cc-number-3");
-        lenCmp(val, 4) && focus(".cc-number-4");
-        validate()
-    }
-    let ccNumber4Changed = () => {
-        let val = getVal(".cc-number-4");
-        lenCmp(val, 4) && focus(".cc-name-input");
+    let ccNumberChanged = (selector, nextSelector) => {
+        let val = getVal(selector);
+        lenCmp(val, 4) && focus(nextSelector);
         validate()
     }
 
     let nameChanged = () => getVal(".cc-name-input").trim() > 0 && validate();
+
+    let validateMonthAndYear = () => {
+        let currentDate = new Date();
+        let currentMonth = currentDate.getMonth() + 1;
+        let currentYear = currentDate.getFullYear();
+        let inputMonth = getVal(".cc-expiry-month");
+        let inputYear = getVal(".cc-expiry-year");
+        if(inputYear > currentYear) {
+            return true
+        } else if(inputYear == currentYear) {
+            if(inputMonth >= currentMonth) {
+                return true;
+            }
+        }
+        return false;
+
+    }
 
     let expiryMonthChanged = () => {
         let val = getVal(".cc-expiry-month");
@@ -213,17 +222,10 @@
     let expiryYearChanged = () => {
         let val = getVal(".cc-expiry-year");
         let currentYear = new Date().getFullYear();
-        if (val.toString().length == 4) {
-            if (val < currentYear) {
-                document.querySelector(".cc-expiry-year").value = currentYear + 1;
-            }
-
-            if (val > currentYear + 5) {
-                document.querySelector(".cc-expiry-year").value = currentYear + 5;
-            }
-
-            validate();
+        if (val.toString().length > 4) {
+            document.querySelector(".cc-expiry-year").value = val.slice(0, 4);
         }
+        validate();
 
     }
 
@@ -247,8 +249,7 @@
             cmpValueLength(".cc-number-3", 4) &&
             cmpValueLength(".cc-number-4", 4) &&
             document.querySelector(".cc-name-input").value.trim().length > 0 &&
-            cmpValueLength(".cc-expiry-month", 2) &&
-            cmpValueLength(".cc-expiry-year", 4) &&
+            validateMonthAndYear() &&
             toggleFlip() &&
             document.querySelector(".cc-cvv").focus();
 
